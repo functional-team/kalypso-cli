@@ -64,3 +64,6 @@ dist/**
 ./output
 package-lock.json
 test.json
+bfg-1.14.0.jar
+crawled.json
+test copy.json
