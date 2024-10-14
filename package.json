@@ -32,7 +32,7 @@
     "format:write": "prettier --write '{src,__mocks__,bin}/**/*.ts'",
     "start:help": "ts-node ./src/index.ts -h",
     "start": "ts-node ./src/index.ts",
-    "crawl": "ts-node ./src/index.ts crawl -q \"Resources | where type contains 'microsoft.kusto/clusters' and name contains 'dev' | project id, name, type, location, subscriptionId, resourceGroup, properties\" -o test.json",
+    "crawl": "ts-node ./src/index.ts crawl -q \"Resources | where type contains 'microsoft.kusto/clusters' and name contains 'dev' | project id, name, type, location, subscriptionId, resourceGroup, properties\" -o crawled.json",
     "demo": "ts-node ./src/index.ts crawl -k \"https://help.kusto.windows.net/\"",
     "test": "jest",
     "bump-version": "rjp package.json version $VERSION",
@@ -63,7 +63,8 @@
     "boxen": "^5.1.2",
     "commander": "^8.2.0",
     "jsonfile": "^6.1.0",
-    "jsonpath": "^1.1.1"
+    "jsonpath": "^1.1.1",
+    "kalypso-cli": "file:"
   },
   "devDependencies": {
     "@commitlint/cli": "^13.1.0",
