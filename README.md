@@ -2,7 +2,9 @@
 
 ## Overview
 kalypso-cli is a command line tool to crawl resources in your Azure subscription and store it as local JSON file.
-This output can be used to visualise your resources in the [Kalypso UI] (https://kalypso.tools/). The UI is running locally in your browser. There is no backend or other service and thus no data transfer whatsoever happening with your data. Everything stays on your local computer. 
+This output can be used to visualise your resources in the [Kalypso UI](https://kalypso.tools/).
+The UI is running locally in your browser. There is no backend or other service and thus no data transfer whatsoever happening with your data. Everything stays on your local computer. 
+Kalypso-cli is designed to crawl all kinds of resources from your subscription(s). As of 2024 the main focus of development lies on discovery of Azure Data Explorer (ADX) resources like tables, functions and policies.
 
 ## Installation
 
