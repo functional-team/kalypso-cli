@@ -83,6 +83,7 @@ main() {
 
   # Unzip it
   gunzip kalypso-cli.gz
+  chmod u+x kalypso-cli
 
   echo "🎉 Downloaded v$VERSION"
   echo "✅ Complete."
