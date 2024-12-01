@@ -1,68 +1,58 @@
 # kalypso-cli
 
-## Overview
-kalypso-cli is a command line tool to crawl resources in your Azure subscription and store it as local JSON file.
-This output can be used to visualise your resources in the [Kalypso UI](https://kalypso.tools/).
-The UI is running locally in your browser. There is no backend or other service and thus no data transfer whatsoever happening with your data. Everything stays on your local computer. 
-Kalypso-cli is designed to crawl all kinds of resources from your subscription(s). As of 2024 the main focus of development lies on discovery of Azure Data Explorer (ADX) resources like tables, functions and policies.
+Discover Azure resources [querying](https://aka.ms/AzureResourceGraph-QueryLanguage) Azure Resource Graph, crawl additional info and store everything into a local JSON file, which can be used with https://kalypso.tools  
 
-## Installation
+Support currently limited to resource type `microsoft.kusto/clusters`
 
-### Prerequisites
-
-- [npm and node.js](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) are installed
-- [azure cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) is installed 
+The CLI expects you to be authenticated in Azure already. This typically achieved with running `az login` before.
 
 
- you just clone the repo and run:
+## Install the latest precompiled binary
 
-   ```shell
-   npm install
-   ```
- 
+```sh
+curl -fsSL https://raw.githubusercontent.com/functional-team/kalypso-cli/refs/heads/main/dist/install.sh | sh
+```
 
-## Documentation
+## Usage
 
-### Quickstart
-Starting a crawl run is as simple as:
+### Command line utility
 
-   ```shell
-   #authenticate to your azure subscription(s)
-   az login
+```sh
+Usage: kalypso-cli crawl [options]
 
-   #run crawler
-   npm run crawl
-   ```
+Crawl Azure Resources
 
-The crawl command supports two parameters:
+Options:
+  -o|--output-path [string]     path to output file, default is set in configuration (default: "crawled.json")
+  -q|--az-graph-query [string]  Use Resource Graph Query to specify scope of the crawl
+  -k|--az-kusto-uri [string]    Use Kusto Cluster URI to crawl specific Cluster only
+  -h, --help                    display help for command
+```
 
-* `--output-path`: file path for where the output JSON is getting stored. Defaults to ./crawled.json
-* `--azure-query`: A KQL query that narrows down what resources should be crawled. Please refer to https://aka.ms/AzureResourceGraph-QueryLanguage for a reference.
+### Examples
 
-### Example
+Using the precompiled binaries:
 
-   ```shell
-   az login
-   ```
-This command opens a browser window to authenticate with your Azure subscription. After sucessful authentication, you should be seeing details about your Azure subscription starting with:
-   ```shell
-   [
-  {
-    "cloudName": "AzureCloud",
-    "homeTenantId": ...
-   ```
+```sh
+az login
+kalypso-cli crawl --output-path "resources.json" --az-graph-query "type == 'microsoft.kusto/clusters' and resourceGroup contains 'dev'"
+```
 
+Cloning the repo and using an existing node.js installation
 
-Now, crawling can be initiated by 
+```sh
+npm install
+az login
+npx ts-node ./src/index.ts crawl --output-path "resources.json" --az-graph-query "type == 'microsoft.kusto/clusters' and resourceGroup contains 'dev'"
+```
+
+## Developer guide 
+
+### Build precompiled binaries (experimental)
+
+   We use https://github.com/james-pre/xsea to ease the creation of single executable apps for all major platforms:
 
    ```shell
-   npm run crawl 
+   npm install --global xsea
+   sudo npm run build && sudo npm run package 
    ```
-The command output should now look like this:
-   ```shell
-SCAN KUSTO CLUSTER : https://myawesomecluster.westeurope.kusto.windows.net
-SCAN KUSTO DATABASE: myawesomedatabase: 45 Schemas. 63 Update Policies. 45 Tables. 143 Functions. 20 Materialized Views. 1 External Tables.
-...
-   ```
-
-

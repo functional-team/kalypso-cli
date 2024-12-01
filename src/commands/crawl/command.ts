@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { Options } from './options';
+import { kalypsoPrint } from '../../lib/kalypso-logo-print';
 import { ResourceGraphClient } from "@azure/arm-resourcegraph";
 import { AzureKustoClusterScanner } from '../../lib/azure/AzureKustoClusterScanner';
 import  * as fs from 'fs';
@@ -24,6 +25,8 @@ export function CrawlCommand(): Command {
 
 async function action(options: Options) {
   
+  kalypsoPrint(`\nAZURE GRAPH QUERY: ${options.azGraphQuery} \nLOCAL OUTPUT PATH: ${options.outputPath}\n` )
+
   let startTime = new Date();
 
   let azureresources:any = {};
@@ -31,8 +34,9 @@ async function action(options: Options) {
 
   if (options.azGraphQuery) {
     const client = new ResourceGraphClient(creds, {})
-    const graphresources = await client.resources({query: options.azGraphQuery})
-  
+    const graphresources = await client.resources({query: "resources | where "+options.azGraphQuery})
+    console.log(`NUMBER OF RESOURCES FOUND IN AZURE GRAPH: ${graphresources.count}`);
+
     for (const resource of graphresources.data) {
       if (resource.type=="microsoft.kusto/clusters") {
         const kustoclusters = await AzureKustoClusterScanner(resource);
