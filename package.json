@@ -64,7 +64,8 @@
     "boxen": "^5.1.2",
     "commander": "^8.2.0",
     "jsonfile": "^6.1.0",
-    "jsonpath": "^1.1.1"
+    "jsonpath": "^1.1.1",
+    "kalypso-cli": "file:"
   },
   "devDependencies": {
     "@commitlint/cli": "^13.1.0",
