@@ -27,12 +27,13 @@
   },
   "scripts": {
     "build": "webpack",
+    "package": "xsea .build/bundle.js --verbose --clean -o dist/kalypso-cli -t darwin-arm64 -t linux-x64 -t win-x64 && gzip -v dist/kalypso-cli-darwin-arm64 && gzip -v dist/kalypso-cli-linux-x64 && gzip -v dist/kalypso-cli-win-x64.exe",
     "commit": "git-cz",
     "format:check": "prettier --list-different '{src,__mocks__,bin}/**/*.ts'",
     "format:write": "prettier --write '{src,__mocks__,bin}/**/*.ts'",
     "start:help": "ts-node ./src/index.ts -h",
     "start": "ts-node ./src/index.ts",
-    "crawl": "ts-node ./src/index.ts crawl -q \"Resources | where type contains 'microsoft.kusto/clusters' and name contains 'dev' | project id, name, type, location, subscriptionId, resourceGroup, properties\" -o test.json",
+    "crawlkusto": "ts-node ./src/index.ts crawl -q \"Resources | where type contains 'microsoft.kusto/clusters' and name contains 'dev' | project id, name, type, location, subscriptionId, resourceGroup, properties\" -o test.json",
     "demo": "ts-node ./src/index.ts crawl -k \"https://help.kusto.windows.net/\"",
     "test": "jest",
     "bump-version": "rjp package.json version $VERSION",
@@ -88,5 +89,10 @@
     "ts-node": "^10.2.1",
     "typescript": "^4.9.5",
     "webpack-cli": "^5.1.4"
+  },
+  "overrides": {
+    "node-fetch@2.x": {
+      "whatwg-url": "14.x"
+    }
   }
 }

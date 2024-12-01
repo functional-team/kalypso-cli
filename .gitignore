@@ -67,3 +67,9 @@ test.json
 bfg-1.14.0.jar
 crawled.json
 test copy.json
+.build/bundle.js
+.build/bundle.js.LICENSE.txt
+src/.DS_Store
+.DS_Store
+.gitignore
+.gitignore
