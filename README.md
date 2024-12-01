@@ -10,7 +10,7 @@ The CLI expects you to be authenticated in Azure already. This typically achieve
 ## Install the latest precompiled binary
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/functional-team/kalypso-cli/refs/heads/main/dist/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/functional-team/kalypso-cli/refs/heads/main/install.sh | sh
 ```
 
 ## Usage
