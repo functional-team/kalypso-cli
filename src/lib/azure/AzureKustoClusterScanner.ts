@@ -112,8 +112,8 @@ export async function AzureKustoClusterScanner(kustoclusterresource:any):Promise
 
                     const payload = JSON.parse(JSON.stringify(externaltable));
                     payload["schema"] = schemata[externaltable.TableName];
-                    payload["id"] = databaseresource.id+"/ExternalTables/"+externaltable.Name;
-                    payload["name"] = externaltable.Name;
+                    payload["id"] = databaseresource.id+"/ExternalTables/"+externaltable.TableName;
+                    payload["name"] = externaltable.TableName;
                     payload["type"] = databaseresource.type + "/ExternalTables";
                     payload["subscriptionId"] = kustoclusterresource.subscriptionId;
                     payload["resourceGroup"] = kustoclusterresource.resourceGroup;
