@@ -122,6 +122,23 @@ export async function AzureKustoClusterScanner(kustoclusterresource:any):Promise
                 }
                 rl.write(counter + " External Tables. ");
 
+                var counter = 1;
+                const continuousexports = (await kustoClient.execute(databaseresource.DatabaseName, ".show continuous-exports")).primaryResults[0];
+                for (const continuousexport of continuousexports.rows()) {
+
+                    counter++;
+
+                    const payload = JSON.parse(JSON.stringify(continuousexports));
+                    payload["DatabaseName"] = databaseresource.DatabaseName;
+                    payload["id"] = databaseresource.id+"/ContinuousExports/"+continuousexport.Name;
+                    payload["name"] = continuousexport.Name;
+                    payload["type"] = databaseresource.type + "/ContinuousExports";
+                    payload["subscriptionId"] = kustoclusterresource.subscriptionId;
+                    payload["resourceGroup"] = kustoclusterresource.resourceGroup;
+                    resources[payload.id] = payload;
+                }
+                rl.write(counter + " Continuous Exports.");
+
             } catch (e) {
                 rl.write(" ERROR. ");
             }
