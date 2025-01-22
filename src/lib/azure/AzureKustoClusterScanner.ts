@@ -1,5 +1,7 @@
 import {Client, KustoConnectionStringBuilder} from 'azure-kusto-data';
 import {createInterface} from "readline";
+import { DefaultAzureCredential } from "@azure/identity";
+import { KustoManagementClient } from "@azure/arm-kusto";
 
 export async function AzureKustoClusterScanner(kustoclusterresource:any):Promise<any> {
 
@@ -13,8 +15,15 @@ export async function AzureKustoClusterScanner(kustoclusterresource:any):Promise
 
     try {
         rl.write("\nSCAN KUSTO CLUSTER : " + kustoclusterresource.properties.uri);
+
+        //basic kusto client
         const kustoClient = new Client(KustoConnectionStringBuilder.withAzLoginIdentity(kustoclusterresource.properties.uri));
         
+        //management kusto client, needed to retrieve Data Connections
+        const credential = new DefaultAzureCredential();
+        const kustoManagementClient = new KustoManagementClient(credential, kustoclusterresource.subscriptionId);
+
+
         const databasesrows = (await kustoClient.execute(null, ".show databases")).primaryResults[0].rows();
         for (const databaserow of databasesrows) {
             const databaseresource = JSON.parse(JSON.stringify(databaserow));
@@ -137,7 +146,46 @@ export async function AzureKustoClusterScanner(kustoclusterresource:any):Promise
                     payload["resourceGroup"] = kustoclusterresource.resourceGroup;
                     resources[payload.id] = payload;
                 }
-                rl.write(counter + " Continuous Exports.");
+                rl.write(counter + " Continuous Exports. ");
+
+                var counter = 1;
+                const dataconnections = kustoManagementClient.dataConnections.listByDatabase(kustoclusterresource.resourceGroup, kustoclusterresource.name, databaseresource.DatabaseName);
+                  for await (const connection of dataconnections) {
+                    const payload: any = {};
+                    counter++;
+                  
+                    payload["Id"] = connection.id;
+                    payload["Name"] = connection.name.split("/")[2]; //only the name of the connection
+                    payload["Type"] = connection.type.split("/")[3]; //only "DataConnections"
+                    payload["Location"] = connection.location;
+                    payload["Kind"] = connection.kind;
+                    payload["TableName"] = connection["tableName"];
+                    payload["MappingRuleName"] = connection["mappingRuleName"];
+                    payload["DataFormat"] = connection["dataFormat"];
+                    payload["ProvisioningState"] = connection["provisioningState"];
+                    payload["DatabaseRouting"] = connection["databaseRouting"];
+                    payload["EventHubResourceId"] = connection["eventHubResourceId"];
+                    payload["EventHubConsumerGroup"] = connection["eventHubConsumerGroup"];
+                    payload["ManagedIdentityResourceId"] = connection["managedIdentityResourceId"];
+                    payload["ManagedIdentityObjectId"] = connection["managedIdentityObjectId"];
+                  
+                    // Attributes specific to EventHub connections
+                    if (connection.kind === "EventHub") {
+                      payload["EventSystemProperties"] = connection["eventSystemProperties"] || [];
+                      payload["Compression"] = connection["compression"];
+                      payload["RetrievalStartDate"] = connection["retrievalStartDate"];
+                    }
+                  
+                    // Attributes specific to EventGrid connections
+                    if (connection.kind === "EventGrid") {
+                      payload["StorageAccountResourceId"] = connection["storageAccountResourceId"];
+                      payload["EventGridResourceId"] = connection["eventGridResourceId"];
+                      payload["IgnoreFirstRecord"] = connection["ignoreFirstRecord"] || false;
+                      payload["BlobStorageEventType"] = connection["blobStorageEventType"];
+                    }
+                    resources[payload.id] = payload;
+                  }
+                  rl.write(counter + " Data Connections. ");
 
             } catch (e) {
                 rl.write(" ERROR. ");
