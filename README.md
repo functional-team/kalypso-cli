@@ -46,6 +46,12 @@ az login
 npx ts-node ./src/index.ts crawl --output-path "resources.json" --az-graph-query "type == 'microsoft.kusto/clusters' and resourceGroup contains 'dev'"
 ```
 
+Find elements in json. This example lists the types of resources found in the cli's output:
+
+```sh
+jq '.crawl.resources[] | {type}' resources.json | sort -u
+```
+
 ## Developer guide 
 
 ### Build precompiled binaries (experimental)

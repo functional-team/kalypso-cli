@@ -154,9 +154,12 @@ export async function AzureKustoClusterScanner(kustoclusterresource:any):Promise
                     const payload: any = {};
                     counter++;
                   
-                    payload["Id"] = connection.id;
-                    payload["Name"] = connection.name.split("/")[2]; //only the name of the connection
-                    payload["Type"] = connection.type.split("/")[3]; //only "DataConnections"
+                    payload["id"] = connection.id;
+                    payload["name"] = connection.name.split("/")[2]; //only the name of the connection
+                    payload["type"] = databaseresource.type + "/DataConnections";
+                    payload["subscriptionId"] = kustoclusterresource.subscriptionId;
+                    payload["resourceGroup"] = kustoclusterresource.resourceGroup;
+                    payload["DatabaseName"] = databaseresource.DatabaseName;
                     payload["Location"] = connection.location;
                     payload["Kind"] = connection.kind;
                     payload["TableName"] = connection["tableName"];
