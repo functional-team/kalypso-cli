@@ -137,7 +137,7 @@ export async function AzureKustoClusterScanner(kustoclusterresource:any):Promise
 
                     counter++;
 
-                    const payload = JSON.parse(JSON.stringify(continuousexports));
+                    const payload = JSON.parse(JSON.stringify(continuousexport));
                     payload["DatabaseName"] = databaseresource.DatabaseName;
                     payload["id"] = databaseresource.id+"/ContinuousExports/"+continuousexport.Name;
                     payload["name"] = continuousexport.Name;
