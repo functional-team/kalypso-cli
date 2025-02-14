@@ -43,8 +43,19 @@ Cloning the repo and using an existing node.js installation
 ```sh
 npm install
 az login
+```
+
+Then, use the following command to query kusto clusters in resource groups containing 'dev' in the name
+```sh
 npx ts-node ./src/index.ts crawl --output-path "resources.json" --az-graph-query "type == 'microsoft.kusto/clusters' and resourceGroup contains 'dev'"
 ```
+
+To query Azure K8s Clusters (AKS) in resource groups containing 'dev' in the name
+```sh
+npx ts-node ./src/index.ts crawl --output-path "resources.json" --az-graph-query "type == 'microsoft.containerservice/managedclusters' and resourceGroup contains 'dev'"
+```
+
+
 
 Find elements in json. This example lists the types of resources found in the cli's output:
 

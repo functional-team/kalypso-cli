@@ -3,6 +3,7 @@ import { Options } from './options';
 import { kalypsoPrint } from '../../lib/kalypso-logo-print';
 import { ResourceGraphClient } from "@azure/arm-resourcegraph";
 import { AzureKustoClusterScanner } from '../../lib/azure/AzureKustoClusterScanner';
+import { AzureK8sClusterScanner } from '../../lib/azure/AzureK8sClusterScanner';
 import  * as fs from 'fs';
 
 const { DefaultAzureCredential } = require("@azure/identity");
@@ -38,10 +39,16 @@ async function action(options: Options) {
     console.log(`NUMBER OF RESOURCES FOUND IN AZURE GRAPH: ${graphresources.count}`);
 
     for (const resource of graphresources.data) {
+      //crawl ADX
       if (resource.type=="microsoft.kusto/clusters") {
         const kustoclusters = await AzureKustoClusterScanner(resource);
         azureresources = {...azureresources, ...kustoclusters};
       }
+      //crawl AKS
+      if (resource.type=="microsoft.aks"){
+        const aksclusters = await AzureK8sClusterScanner(resource);
+        azureresources = {...azureresources, ...aksclusters}
+      } 
     }
 
   }
