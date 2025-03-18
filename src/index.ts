@@ -3,10 +3,12 @@ import { Command } from 'commander';
 import { CrawlCommand } from './commands';
 import * as packageJSON from '../package.json';
 import {parse} from 'JSONStream';
-import stream from 'stream';
+import {pipeline}  from 'stream/promises';
+import {Transform, TransformCallback, TransformOptions, Readable} from 'stream';
+import { CachingTransform, jsonCutTransform} from './lib/pipelinetransformers/transformers';
+import { categorize } from './lib/pipelinetransformers/categorize';
 
-import pump from 'pump';
-
+async function app() {
 const program = new Command();
 
 program
@@ -17,11 +19,48 @@ program
 program.addCommand(CrawlCommand());
 
 
-parse('*')
-if (! process.stdin.isTTY) {
+const storedDocuments = []
+const store = new Transform({
+    readableObjectMode: true,
+    writableObjectMode: true,
+    transform(chunk, encoding, callback) {
+        storedDocuments.push(chunk);
+        // this.push(chunk);
+        callback();
+    }
+})
 
-    process.exit(0)
+const printJson = new Transform({
+    readableObjectMode: true,
+    writableObjectMode: true,
+    transform(chunk, encoding, callback) {
+        console.log(chunk)
+        callback();
+    },
+
+})
+const nop = new Transform({
+    readableObjectMode: true,
+    writableObjectMode: true,
+    transform(chunk, encoding, callback) {
+        callback();
+    },
+
+})
+
+if (! process.stdin.isTTY) {
+    
+    try{
+        await pipeline(process.stdin, jsonCutTransform ,categorize, nop)
+        console.log("pipeline finished");
+        console.log(storedDocuments.length);
+    } catch(e) {
+        console.log("error")
+        console.log(e)
+    }
 }
 
-
 program.parseAsync()
+
+}
+app()
