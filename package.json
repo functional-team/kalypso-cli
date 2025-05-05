@@ -62,7 +62,7 @@
     "@types/jsonpath": "^0.2.4",
     "azure-kusto-data": "^5.2.3",
     "boxen": "^5.1.2",
-    "commander": "^8.2.0",
+    "commander": "^8.3.0",
     "jsonfile": "^6.1.0",
     "jsonpath": "^1.1.1",
     "kalypso-cli": "file:"
