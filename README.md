@@ -53,7 +53,11 @@ Find elements in json. This example lists the types of resources found in the cl
 jq '.crawl.resources[] | {type}' resources.json | sort -u
 ```
 
-## Developer guide 
+## Developers guide 
+
+### Needed packages
+* `@azure/arm-resourcegraph`
+
 
 ### Build precompiled binaries (experimental)
 
@@ -64,7 +68,7 @@ jq '.crawl.resources[] | {type}' resources.json | sort -u
    sudo npm run build && sudo npm run package 
    ```
 
-### Further development of the crawler
+### Further development of the crawler - prerequisites
   Feel free to fork our repository and contribute Pull Requests.
 
   To develop the crawler you need the following packages installed locally:
