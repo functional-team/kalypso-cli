@@ -18,6 +18,7 @@ curl -fsSL https://raw.githubusercontent.com/functional-team/kalypso-cli/refs/he
 ### Command line utility
 
 ```sh
+# You may want to introduce the command kalypso-cli to your OS (e.g. in the PATH)
 Usage: kalypso-cli crawl [options]
 
 Crawl Azure Resources
@@ -52,7 +53,11 @@ Find elements in json. This example lists the types of resources found in the cl
 jq '.crawl.resources[] | {type}' resources.json | sort -u
 ```
 
-## Developer guide 
+## Developers guide 
+
+### Needed packages
+* `@azure/arm-resourcegraph`
+
 
 ### Build precompiled binaries (experimental)
 
@@ -62,3 +67,15 @@ jq '.crawl.resources[] | {type}' resources.json | sort -u
    npm install --global xsea
    sudo npm run build && sudo npm run package 
    ```
+
+### Further development of the crawler - prerequisites
+  Feel free to fork our repository and contribute Pull Requests.
+
+  To develop the crawler you need the following packages installed locally:
+  
+- Node.js
+- npm
+
+  ```
+  npm install commander --save
+  ```

@@ -56,7 +56,6 @@ export async function AzureKustoClusterScanner(kustoclusterresource:any):Promise
                     const policyrow = JSON.parse(JSON.stringify(policy));
                     const tablename = policyrow.EntityName.split(".")[1].replace("[", '').replace("]", '')
                     delete policyrow["PolicyName"]
-                    delete policyrow["EntityName"]
                     delete policyrow["EntityType"]
                     if (!(tablename in updatepolicies)) {updatepolicies[tablename] = []}
                     updatepolicies[tablename].push(policyrow)
