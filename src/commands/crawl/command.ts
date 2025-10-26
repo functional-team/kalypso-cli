@@ -3,6 +3,7 @@ import { Options } from './options';
 import { kalypsoPrint } from '../../lib/kalypso-logo-print';
 import { ResourceGraphClient } from "@azure/arm-resourcegraph";
 import { AzureKustoClusterScanner } from '../../lib/azure/AzureKustoClusterScanner';
+import { AzureFabricCapacityScanner } from '../../lib/azure/AzureFabricCapacityScanner';
 import  * as fs from 'fs';
 
 const { DefaultAzureCredential } = require("@azure/identity");
@@ -41,6 +42,10 @@ async function action(options: Options) {
       if (resource.type=="microsoft.kusto/clusters") {
         const kustoclusters = await AzureKustoClusterScanner(resource);
         azureresources = {...azureresources, ...kustoclusters};
+      }
+      if (resource.type=="microsoft.fabric/capacities") {
+        const fabriccapacities = await AzureFabricCapacityScanner(resource);
+        azureresources = {...azureresources, ...fabriccapacities};
       }
     }
 
