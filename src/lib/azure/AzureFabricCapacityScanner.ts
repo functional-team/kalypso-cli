@@ -1,6 +1,7 @@
 import { DefaultAzureCredential } from "@azure/identity";
 import axios from "axios";
 import { AzureFabricEventhouseScanner } from "./AzureFabricEventhouseScanner";
+import { AzureFabricEventstreamScanner } from "./AzureFabricEventstreamScanner";
 
 /**
  * Scans a Microsoft Fabric Capacity resource and returns its details, including listing workspaces and their eventhouses via Fabric Core REST API.
@@ -18,6 +19,9 @@ export async function AzureFabricCapacityScanner(fabricCapacityResourceFromGraph
     if (!token) {
         console.error("Could not acquire Fabric API access token");
         return resources;  
+    }
+    else {
+        console.debug(`Bearer Token for accessing Fabric: ${token}`);
     }
 
     // Fetch all capacities and replace fabricCapacityResource with the full object from the API
@@ -48,6 +52,40 @@ export async function AzureFabricCapacityScanner(fabricCapacityResourceFromGraph
 
     // Get the capacityId (name) for filtering workspaces
     const capacityId = fabricCapacityResource.id.split("/").pop();
+
+    // Call the Fabric Core REST API to list all connections
+    let allConnectionsUrl = "https://api.fabric.microsoft.com/v1/connections";
+    let allConnectionsContinuationToken: string | undefined = undefined;
+    try {
+        do {
+            const response = await axios.get(allConnectionsUrl, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+            const data = response.data;
+            if (data.value) {
+
+                for (const con of data.value) {
+                    let connection = con;
+                    connection["type"] = "Microsoft.Fabric/Connections";
+                    connection["id"] = "/subscriptions/"+fabricCapacityResourceFromGraph.subscriptionId+"/resourceGroups/"+fabricCapacityResourceFromGraph.resourceGroup+"/providers/Microsoft.Fabric/Connections/"+connection.id;
+                    connection["subscriptionId"] = fabricCapacityResourceFromGraph.subscriptionId || undefined;
+                    connection["resourceGroup"] = fabricCapacityResourceFromGraph.resourceGroup || undefined;
+                    resources[connection.id] = connection;
+                }
+
+            }
+            allConnectionsContinuationToken = data.continuationToken;
+            if (allConnectionsContinuationToken) {
+                allConnectionsUrl = `https://api.fabric.microsoft.com/v1/connections?continuationToken=${encodeURIComponent(allConnectionsContinuationToken)}`;
+            }
+        } while (allConnectionsContinuationToken);
+    
+    } catch (err) {
+        console.error("Error listing connections for Fabric capacity:", err?.response?.data || err);
+    }
 
     // Call the Fabric Core REST API to list all workspaces
     let url = "https://api.fabric.microsoft.com/v1/workspaces";
@@ -107,23 +145,26 @@ export async function AzureFabricCapacityScanner(fabricCapacityResourceFromGraph
                     }
                 });
                 const eventhouses = eventhouseResp.data.value || [];
-                console.log(`  Workspace ${ws.displayName || ws.id}: Found ${eventhouses.length} eventhouses`);
+                console.log(`  WORKSPACE ${ws.displayName} ID ${ws.id}: Found ${eventhouses.length} eventhouses`);
                 for (const eh of eventhouses) {
-                    resources[eh.id] = eh;
-                    // Invoke AzureKustoClusterScanner for each eventhouse
+                    
+                    const eventhouseresource = {
+                        type: "microsoft.fabric/eventhouses",
+                        id: workspace.id + "/Eventhouses/"+eh.id,
+                        name: eh.displayName,
+                        displayName: eh.displayName,
+                        properties: {
+                            uri: eh.properties.queryServiceUri
+                        },
+                        subscriptionId: fabricCapacityResourceFromGraph.subscriptionId || undefined,
+                        resourceGroup: fabricCapacityResourceFromGraph.resourceGroup || undefined
+                    };
+                    resources[eventhouseresource.id] = eventhouseresource;
+
+                    // Invoke AzureFabricEventhouseScanner for each eventhouse
                     if (eh.properties?.queryServiceUri) {
-                        const kustoResource = {
-                            type: "microsoft.fabric/eventhouses",
-                            id: eh.id,
-                            name: eh.displayName,
-                            properties: {
-                                uri: eh.properties.queryServiceUri
-                            },
-                            subscriptionId: fabricCapacityResourceFromGraph.subscriptionId || undefined,
-                            resourceGroup: fabricCapacityResourceFromGraph.resourceGroup || undefined
-                        };
                         try {
-                            const kustoResources = await AzureFabricEventhouseScanner(kustoResource);
+                            const kustoResources = await AzureFabricEventhouseScanner(eventhouseresource);
                             resources = { ...resources, ...kustoResources };
                         } catch (kerr) {
                             console.error(`    Error scanning Kusto cluster for eventhouse ${eh.id}:`, kerr);
@@ -133,6 +174,35 @@ export async function AzureFabricCapacityScanner(fabricCapacityResourceFromGraph
             } catch (err) {
                 console.error(`  Error listing eventhouses for workspace ${ws.id}:`, err?.response?.data || err);
             }
+
+            try {
+                const eventstreamUrl = `https://api.fabric.microsoft.com/v1/workspaces/${ws.id}/eventstreams`;
+                const eventstreamResp = await axios.get(eventstreamUrl, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+                const eventstreams = eventstreamResp.data.value || [];
+                console.log(`  WORKSPACE ${ws.displayName} ID ${ws.id}: Found ${eventstreams.length} eventstreams`);
+                for (const es of eventstreams) {
+                    const eventstreamDef = await AzureFabricEventstreamScanner(es, token);
+                    const eventstreamMeta = {
+                        type: "microsoft.fabric/eventstreams",
+                        id: workspace.id + "/Eventstreams/"+es.id,
+                        name: es.displayName,
+                        displayName: es.displayName,
+                        subscriptionId: fabricCapacityResourceFromGraph.subscriptionId || undefined,
+                        resourceGroup: fabricCapacityResourceFromGraph.resourceGroup || undefined
+                    }
+                    
+                    resources[eventstreamMeta.id] = {...eventstreamMeta, ...eventstreamDef};
+                }
+
+            } catch (err) {
+                console.error(`  Error listing eventstreams for workspace ${ws.id}:`, err?.response?.data || err);
+            }                
+            
         }
     } catch (err) {
         console.error("Error listing workspaces for Fabric capacity:", err?.response?.data || err);

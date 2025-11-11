@@ -44,6 +44,11 @@ Cloning the repo and using an existing node.js installation
 npm install
 az login
 npx ts-node ./src/index.ts crawl --output-path "resources.json" --az-graph-query "type == 'microsoft.kusto/clusters' and resourceGroup contains 'dev'"
+type == "microsoft.fabric/capacities"
+```
+
+```sh
+npx ts-node ./src/index.ts crawl --output-path "resources.json" --az-graph-query "type == 'microsoft.fabric/capacities'"
 ```
 
 Find elements in json. This example lists the types of resources found in the cli's output:

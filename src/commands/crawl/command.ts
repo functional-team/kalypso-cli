@@ -5,6 +5,7 @@ import { ResourceGraphClient } from "@azure/arm-resourcegraph";
 import { AzureKustoClusterScanner } from '../../lib/azure/AzureKustoClusterScanner';
 import { AzureFabricCapacityScanner } from '../../lib/azure/AzureFabricCapacityScanner';
 import  * as fs from 'fs';
+import { AzureEventHubScanner } from '../../lib/azure/AzureEventHubScanner';
 
 const { DefaultAzureCredential } = require("@azure/identity");
 type CommandInput = {
@@ -46,6 +47,10 @@ async function action(options: Options) {
       if (resource.type=="microsoft.fabric/capacities") {
         const fabriccapacities = await AzureFabricCapacityScanner(resource);
         azureresources = {...azureresources, ...fabriccapacities};
+      }
+      if (resource.type=="microsoft.eventhub/namespaces") {
+        const eventhubs = await AzureEventHubScanner(resource);
+        azureresources = {...azureresources, ...eventhubs};
       }
     }
 
